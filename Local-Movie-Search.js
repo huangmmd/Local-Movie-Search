@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Movie Search
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  在网页上添加输入框和按钮，搜索本地电影是否存在（需要配合Everything的HTTP服务器使用）。注：拖选要搜索的电影名再使用ALT+C快捷键可直接搜索。
 // @author       huangmmd
 // @match        *://*/*
@@ -15,34 +15,22 @@
     // 创建输入框和按钮
     const input = document.createElement('input');
     input.placeholder = '输入电影名字';
-    input.style.padding = '8px 12px';
-    input.style.border = '1px solid #ccc';
-    input.style.borderRadius = '4px';
-    input.style.marginRight = '5px';
-    input.style.fontSize = '14px';
+    input.style.padding = '6.4px 9.6px'; // 8px * 0.8 = 6.4px, 12px * 0.8 = 9.6px
+    input.style.border = '2px solid #ccc';
+    input.style.borderRadius = '3.2px'; // 4px * 0.8 = 3.2px
+    input.style.marginRight = '4px'; // 5px * 0.8 = 4px
+    input.style.fontSize = '11.2px'; // 14px * 0.8 = 11.2px
 
-    // 添加输入事件监听器，根据输入框内容调整透明度
-    input.addEventListener('input', function() {
-        if (input.value.trim() === '' || input.value === '输入电影名字') {
-            input.style.opacity = '0.1';
-            button.style.opacity = '0.1';
-            container.style.opacity = '0.1';
-        } else {
-            input.style.opacity = '1';
-            button.style.opacity = '1';
-            container.style.opacity = '1';
-        }
-    });
 
     const button = document.createElement('button');
     button.textContent = '搜索本地电影';
-    button.style.padding = '8px 12px';
+    button.style.padding = '6.4px 9.6px'; // 8px * 0.8 = 6.4px, 12px * 0.8 = 9.6px
     button.style.backgroundColor = '#007BFF';
     button.style.color = 'white';
     button.style.border = 'none';
-    button.style.borderRadius = '4px';
+    button.style.borderRadius = '3.2px'; // 4px * 0.8 = 3.2px
     button.style.cursor = 'pointer';
-    button.style.fontSize = '14px';
+    button.style.fontSize = '11.2px'; // 14px * 0.8 = 11.2px
     button.addEventListener('mouseover', function() {
         this.style.backgroundColor = '#0056b3';
     });
@@ -53,18 +41,18 @@
     // 创建用于显示结果的元素
     const resultDiv = document.createElement('div');
     resultDiv.style.color = '#333';
-    resultDiv.style.marginBottom = '10px';
-    resultDiv.style.fontSize = '14px';
+    resultDiv.style.marginBottom = '5px';
+    resultDiv.style.fontSize = '5.6px'; // 7px * 0.8 = 5.6px
 
     // 将输入框、按钮和结果显示元素添加到页面左下角
     const container = document.createElement('div');
     container.style.position = 'fixed';
-    container.style.bottom = '20px';
-    container.style.left = '20px';
+    container.style.bottom = '16px'; // 20px * 0.8 = 16px
+    container.style.left = '16px'; // 20px * 0.8 = 16px
     container.style.zIndex = 9999;
     container.style.backgroundColor = 'white';
-    container.style.padding = '15px';
-    container.style.borderRadius = '8px';
+    container.style.padding = '12px'; // 15px * 0.8 = 12px
+    container.style.borderRadius = '6.4px'; // 8px * 0.8 = 6.4px
     container.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
     container.appendChild(resultDiv);
     container.appendChild(input);
@@ -88,15 +76,15 @@
     const closeButton = document.createElement('button');
     closeButton.textContent = '关闭';
     closeButton.style.position = 'absolute';
-    closeButton.style.top = '10px';
-    closeButton.style.right = '10px';
-    closeButton.style.padding = '5px 10px';
+    closeButton.style.top = '8px'; // 10px * 0.8 = 8px
+    closeButton.style.right = '8px'; // 10px * 0.8 = 8px
+    closeButton.style.padding = '4px 8px'; // 5px * 0.8 = 4px, 10px * 0.8 = 8px
     closeButton.style.backgroundColor = '#dc3545';
     closeButton.style.color = 'white';
     closeButton.style.border = 'none';
-    closeButton.style.borderRadius = '4px';
+    closeButton.style.borderRadius = '3.2px'; // 4px * 0.8 = 3.2px
     closeButton.style.cursor = 'pointer';
-    closeButton.style.fontSize = '12px';
+    closeButton.style.fontSize = '9.6px'; // 12px * 0.8 = 9.6px
     closeButton.addEventListener('click', function() {
         settingsContainer.style.display = 'none';
     });
@@ -105,27 +93,27 @@
     const settingsLabel = document.createElement('label');
     settingsLabel.textContent = '检索服务器地址: ';
     settingsLabel.style.display = 'block';
-    settingsLabel.style.marginBottom = '5px';
+    settingsLabel.style.marginBottom = '4px'; // 5px * 0.8 = 4px
 
     const settingsInput = document.createElement('input');
     settingsInput.type = 'text';
     settingsInput.value = 'http://localhost:8080'; // 默认值
-    settingsInput.style.width = '200px';
-    settingsInput.style.padding = '8px 12px';
-    settingsInput.style.border = '1px solid #ccc';
-    settingsInput.style.borderRadius = '4px';
-    settingsInput.style.marginRight = '5px';
-    settingsInput.style.fontSize = '14px';
+    settingsInput.style.width = '160px'; // 200px * 0.8 = 160px
+    settingsInput.style.padding = '6.4px 9.6px'; // 8px * 0.8 = 6.4px, 12px * 0.8 = 9.6px
+    settingsInput.style.border = '2px solid #ccc';
+    settingsInput.style.borderRadius = '3.2px'; // 4px * 0.8 = 3.2px
+    settingsInput.style.marginRight = '4px'; // 5px * 0.8 = 4px
+    settingsInput.style.fontSize = '11.2px'; // 14px * 0.8 = 11.2px
 
     const settingsSaveButton = document.createElement('button');
     settingsSaveButton.textContent = '保存';
-    settingsSaveButton.style.padding = '8px 12px';
+    settingsSaveButton.style.padding = '6.4px 9.6px'; // 8px * 0.8 = 6.4px, 12px * 0.8 = 9.6px
     settingsSaveButton.style.backgroundColor = '#007BFF';
     settingsSaveButton.style.color = 'white';
     settingsSaveButton.style.border = 'none';
-    settingsSaveButton.style.borderRadius = '4px';
+    settingsSaveButton.style.borderRadius = '3.2px'; // 4px * 0.8 = 3.2px
     settingsSaveButton.style.cursor = 'pointer';
-    settingsSaveButton.style.fontSize = '14px';
+    settingsSaveButton.style.fontSize = '11.2px'; // 14px * 0.8 = 11.2px
     settingsSaveButton.addEventListener('click', function() {
         localStorage.setItem('searchServerUrl', settingsInput.value);
         settingsContainer.style.display = 'none';
