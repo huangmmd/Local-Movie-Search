@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Movie Search
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.4
 // @description  在网页上添加输入框和按钮，搜索本地电影是否存在（需要配合Everything的HTTP服务器使用）。注：拖选要搜索的电影名再使用ALT+C快捷键可直接搜索。
 // @author       huangmmd
 // @match        *://*/*
@@ -282,4 +282,31 @@
             toggleButton.style.display = 'block'; // 显示“搜”字按钮
         }
     });
+
+    // 检查是否是豆瓣电影页面并提取电影名称
+    function extractMovieNameFromDouban() {
+        const movieNameElement = document.querySelector('span[property="v:itemreviewed"]');
+        if (movieNameElement) {
+            return movieNameElement.textContent.trim();
+        }
+        return null;
+    }
+
+    // 自动填充并搜索电影名称
+    function autoSearchDoubanMovie() {
+        const movieName = extractMovieNameFromDouban();
+        if (movieName) {
+            input.value = movieName;
+            // 显示搜索界面
+            container.style.display = 'block';
+            toggleButton.style.display = 'none'; // 隐藏“搜”字按钮
+            performSearch();
+        }
+    }
+
+    // 在页面加载完成后尝试自动搜索豆瓣电影
+    window.addEventListener('load', function() {
+        autoSearchDoubanMovie();
+    });
+
 })();
