@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Movie Search
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  在网页上添加输入框和按钮，搜索本地电影是否存在（需要配合Everything的HTTP服务器使用）。注：拖选要搜索的电影名再使用ALT+C快捷键可直接搜索。
 // @author       huangmmd
 // @match        *://*/*
@@ -45,7 +45,27 @@
     resultDiv.style.marginBottom = '5px';
     resultDiv.style.fontSize = '13.552px'; // 修改字体大小为与输入框一致
 
-    // 将输入框、按钮和结果显示元素添加到页面左下角
+    // 创建用于触发搜索界面显示和隐藏的小方框按钮
+    const toggleButton = document.createElement('button');
+    toggleButton.textContent = '搜';
+    toggleButton.style.padding = '7.744px 11.616px'; // 7.04px * 1.1 = 7.744px, 10.56px * 1.1 = 11.616px
+    toggleButton.style.backgroundColor = '#007BFF'; // 与搜索按钮颜色一致
+    toggleButton.style.color = 'white';
+    toggleButton.style.border = 'none';
+    toggleButton.style.borderRadius = '3.872px'; // 3.52px * 1.1 = 3.872px
+    toggleButton.style.cursor = 'pointer';
+    toggleButton.style.fontSize = '13.552px'; // 12.32px * 1.1 = 13.552px
+    toggleButton.style.position = 'fixed';
+    toggleButton.style.bottom = '19.36px'; // 17.6px * 1.1 = 19.36px
+    toggleButton.style.left = '19.36px'; // 移动到左下角
+    toggleButton.style.zIndex = 9999;
+    toggleButton.addEventListener('click', function() {
+        container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        toggleButton.style.display = container.style.display === 'none' ? 'block' : 'none'; // 隐藏或显示“搜”字按钮
+    });
+    document.body.appendChild(toggleButton);
+
+    // 将输入框、按钮和结果显示元素添加到页面左下角，并默认隐藏
     const container = document.createElement('div');
     container.style.position = 'fixed';
     container.style.bottom = '19.36px'; // 17.6px * 1.1 = 19.36px
@@ -55,6 +75,7 @@
     container.style.padding = '14.52px'; // 13.2px * 1.1 = 14.52px
     container.style.borderRadius = '7.744px'; // 7.04px * 1.1 = 7.744px
     container.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+    container.style.display = 'none'; // 默认隐藏搜索界面
     container.appendChild(resultDiv);
     container.appendChild(input);
     container.appendChild(button);
@@ -231,6 +252,8 @@
             // 3 秒后自动消失结果
             setTimeout(() => {
                 resultDiv.textContent = '';
+                container.style.display = 'none'; // 隐藏搜索页面
+                toggleButton.style.display = 'block'; // 显示“搜”字按钮
             }, 3000);
         }
     }
@@ -243,9 +266,20 @@
             const selectedText = window.getSelection().toString().trim();
             if (selectedText) {
                 input.value = selectedText;
+                // 显示搜索界面
+                container.style.display = 'block';
+                toggleButton.style.display = 'none'; // 隐藏“搜”字按钮
                 // 模拟按钮点击事件进行搜索
                 performSearch();
             }
+        }
+    });
+
+    // 监听输入框内容变化
+    input.addEventListener('input', function() {
+        if (input.value.trim() === '') {
+            container.style.display = 'none'; // 隐藏搜索页面
+            toggleButton.style.display = 'block'; // 显示“搜”字按钮
         }
     });
 })();
