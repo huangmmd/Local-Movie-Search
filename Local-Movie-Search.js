@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Movie Search
 // @namespace    http://tampermonkey.net/
-// @version      1.5
+// @version      1.6
 // @description  在网页上添加输入框和按钮，搜索本地电影是否存在（需要配合Everything的HTTP服务器使用）。注：拖选要搜索的电影名再使用ALT+C快捷键可直接搜索。
 // @author       huangmmd
 // @match        *://*/*
@@ -162,8 +162,11 @@
     function performSearch() {
         const movieName = input.value.trim();
         if (movieName) {
-            // 将电影名字按空格拆分成多个部分
-            const movieParts = movieName.split(' ');
+            // 检查电影名字是否包含“[]”或“《》”或“<>”符号
+            const shouldSplit = !/[\[\]《》<>]/.test(movieName);
+
+            // 根据检查结果决定是否将电影名字按空格拆分成多个部分
+            const movieParts = shouldSplit ? movieName.split(' ') : [movieName];
 
             // 存储所有找到的电影和未找到的电影
             let allFoundMovies = [];
@@ -232,31 +235,18 @@
                             });
 
                             // 根据结果显示情况设置自动消失
-                            if (notFoundMovies.length > 0 && allFoundMovies.length === 0) {
-                                // 3 秒后自动消失结果
-                                setTimeout(() => {
-                                    resultDiv.textContent = '';
-                                }, 3000);
-                            }
+
                         },
                         onerror: function() {
                             resultDiv.textContent = '请求失败，请检查 Everything 服务器是否正常运行';
-                            // 3 秒后自动消失结果
-                            setTimeout(() => {
-                                resultDiv.textContent = '';
-                            }, 3000);
+
                         }
                     });
                 }
             });
         } else {
             resultDiv.textContent = '请输入电影名字';
-            // 3 秒后自动消失结果
-            setTimeout(() => {
-                resultDiv.textContent = '';
-                container.style.display = 'none'; // 隐藏搜索页面
-                toggleButton.style.display = 'block'; // 显示“搜”字按钮
-            }, 3000);
+
         }
     }
 
@@ -294,11 +284,47 @@
         return null;
     }
 
-    // 自动填充并搜索电影名称
+    // 检查是否是漫画页面并提取漫画名称
+    function extractMangaNameFromPage() {
+        const mangaNameElement = document.querySelector('font.text_bglight_big');
+        if (mangaNameElement) {
+            return mangaNameElement.textContent.trim();
+        }
+        return null;
+    }
+
+    // 新增：检查页面是否存在 <h2>*****</h2> 元素并提取文件名
+    function extractFileNameFromH2() {
+        const h2Element = document.querySelector('h2');
+        if (h2Element) {
+            return h2Element.textContent.trim();
+        }
+        return null;
+    }
+
+    // 新增：检查页面是否存在 <span style="color:#CC0000;">*******</span> 元素并提取文件名
+    function extractFileNameFromSpan() {
+        const spanElement = document.querySelector('span[style="color:#CC0000;"]');
+        if (spanElement) {
+            return spanElement.textContent.trim();
+        }
+        return null;
+    }
+
+    // 自动填充并搜索电影或漫画名称
     function autoSearchDoubanMovie() {
-        const movieName = extractMovieNameFromDouban();
-        if (movieName) {
-            input.value = movieName;
+        let name = extractFileNameFromSpan(); // 优先尝试提取 <span style="color:#CC0000;">*******</span> 元素中的文件名
+        if (!name) {
+            name = extractFileNameFromH2(); // 其次尝试提取 <h2> 元素中的文件名
+        }
+        if (!name) {
+            name = extractMovieNameFromDouban();
+        }
+        if (!name) {
+            name = extractMangaNameFromPage();
+        }
+        if (name) {
+            input.value = name;
             // 显示搜索界面
             container.style.display = 'block';
             toggleButton.style.display = 'none'; // 隐藏“搜”字按钮
@@ -306,7 +332,7 @@
         }
     }
 
-    // 在页面加载完成后尝试自动搜索豆瓣电影
+    // 在页面加载完成后尝试自动搜索豆瓣电影或漫画
     window.addEventListener('load', function() {
         autoSearchDoubanMovie();
     });
