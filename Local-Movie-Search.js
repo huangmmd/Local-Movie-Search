@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Movie Search
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      1.5
 // @description  在网页上添加输入框和按钮，搜索本地电影是否存在（需要配合Everything的HTTP服务器使用）。注：拖选要搜索的电影名再使用ALT+C快捷键可直接搜索。
 // @author       huangmmd
 // @match        *://*/*
@@ -24,8 +24,7 @@
 
 
     const button = document.createElement('button');
-    button.textContent = '搜索本地电影';
-    button.style.padding = '7.744px 11.616px'; // 7.04px * 1.1 = 7.744px, 10.56px * 1.1 = 11.616px
+    button.textContent = '搜索'; // 修改按钮文本为“搜索”
     button.style.backgroundColor = '#007BFF';
     button.style.color = 'white';
     button.style.border = 'none';
@@ -44,6 +43,8 @@
     resultDiv.style.color = '#333';
     resultDiv.style.marginBottom = '5px';
     resultDiv.style.fontSize = '13.552px'; // 修改字体大小为与输入框一致
+    resultDiv.style.maxHeight = '200px'; // 设置最大高度
+    resultDiv.style.overflowY = 'auto'; // 添加垂直滚动条
 
     // 创建用于触发搜索界面显示和隐藏的小方框按钮
     const toggleButton = document.createElement('button');
@@ -177,7 +178,8 @@
                         method: 'GET',
                         url: searchUrl,
                         onload: function(response) {
-                            const commonFormats = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv'];
+                            // 修改 commonFormats 数组，增加对 .zip 和 .epub 格式的支持
+                            const commonFormats = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.zip', '.epub'];
                             let foundMovies = [];
                             commonFormats.forEach(format => {
                                 const regex = new RegExp(`[^\\s"']+${format}`, 'g');
@@ -200,7 +202,7 @@
                             // 显示所有找到的电影和未找到的电影
                             let resultText = '';
                             if (allFoundMovies.length > 0) {
-                                resultText += '本地存在以下电影：<br>';
+                                resultText += '本地存在以下电影、漫画：<br>';
                                 allFoundMovies.forEach(movie => {
                                     let decodedMovie = decodeURIComponent(movie);
                                     // 提取文件路径和文件名
@@ -214,7 +216,7 @@
                                 if (allFoundMovies.length > 0) {
                                     resultText += '<br>';
                                 }
-                                resultText += '本地不存在以下电影：<br>';
+                                resultText += '本地不存在以下电影、漫画：<br>';
                                 notFoundMovies.forEach(movie => {
                                     resultText += `${movie}<br>`;
                                 });
