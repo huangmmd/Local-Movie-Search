@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name         Local Movie Search
 // @namespace    http://tampermonkey.net/
-// @version      1.6
+// @version      1.7
 // @description  在网页上添加输入框和按钮，搜索本地电影是否存在（需要配合Everything的HTTP服务器使用）。注：拖选要搜索的电影名再使用ALT+C快捷键可直接搜索。
 // @author       huangmmd
 // @match        *://*/*
 // @license      MIT
 // @grant        GM_xmlhttpRequest
 // @grant        GM_registerMenuCommand
+// @grant        GM_setValue
+// @grant        GM_getValue
 // ==/UserScript==
 
 (function() {
@@ -21,7 +23,6 @@
     input.style.borderRadius = '3.872px'; // 3.52px * 1.1 = 3.872px
     input.style.marginRight = '4.84px'; // 4.4px * 1.1 = 4.84px
     input.style.fontSize = '13.552px'; // 12.32px * 1.1 = 13.552px
-
 
     const button = document.createElement('button');
     button.textContent = '搜索'; // 修改按钮文本为“搜索”
@@ -158,6 +159,79 @@
         settingsContainer.style.display = settingsContainer.style.display === 'none' ? 'block' : 'none';
     });
 
+    // 创建新的设置面板
+    const websiteSettingsContainer = document.createElement('div');
+    websiteSettingsContainer.style.position = 'fixed';
+    websiteSettingsContainer.style.top = '50%';
+    websiteSettingsContainer.style.left = '50%';
+    websiteSettingsContainer.style.transform = 'translate(-50%, -50%)'; // 居中显示
+    websiteSettingsContainer.style.zIndex = 9999;
+    websiteSettingsContainer.style.backgroundColor = 'white';
+    websiteSettingsContainer.style.padding = '15px';
+    websiteSettingsContainer.style.borderRadius = '8px';
+    websiteSettingsContainer.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.1)';
+    websiteSettingsContainer.style.display = 'none'; // 默认隐藏设置面板
+
+    // 添加关闭按钮
+    const websiteCloseButton = document.createElement('button');
+    websiteCloseButton.textContent = '关闭';
+    websiteCloseButton.style.position = 'absolute';
+    websiteCloseButton.style.top = '9.68px'; // 8.8px * 1.1 = 9.68px
+    websiteCloseButton.style.right = '9.68px'; // 8.8px * 1.1 = 9.68px
+    websiteCloseButton.style.padding = '4.84px 9.68px'; // 4.4px * 1.1 = 4.84px, 8.8px * 1.1 = 9.68px
+    websiteCloseButton.style.backgroundColor = '#dc3545';
+    websiteCloseButton.style.color = 'white';
+    websiteCloseButton.style.border = 'none';
+    websiteCloseButton.style.borderRadius = '3.872px'; // 3.52px * 1.1 = 3.872px
+    websiteCloseButton.style.cursor = 'pointer';
+    websiteCloseButton.style.fontSize = '11.616px'; // 10.56px * 1.1 = 11.616px
+    websiteCloseButton.addEventListener('click', function() {
+        websiteSettingsContainer.style.display = 'none';
+    });
+    websiteSettingsContainer.appendChild(websiteCloseButton);
+
+    const websiteSettingsLabel = document.createElement('label');
+    websiteSettingsLabel.textContent = '自动搜索网站列表 (每行一个URL): ';
+    websiteSettingsLabel.style.display = 'block';
+    websiteSettingsLabel.style.marginBottom = '4.84px'; // 4.4px * 1.1 = 4.84px
+
+    const websiteSettingsTextarea = document.createElement('textarea');
+    websiteSettingsTextarea.style.width = '300px'; // 设置宽度
+    websiteSettingsTextarea.style.height = '100px'; // 设置高度
+    websiteSettingsTextarea.style.padding = '7.744px 11.616px'; // 7.04px * 1.1 = 7.744px, 10.56px * 1.1 = 11.616px
+    websiteSettingsTextarea.style.border = '2px solid #ccc';
+    websiteSettingsTextarea.style.borderRadius = '3.872px'; // 3.52px * 1.1 = 3.872px
+    websiteSettingsTextarea.style.marginRight = '4.84px'; // 4.4px * 1.1 = 4.84px
+    websiteSettingsTextarea.style.fontSize = '13.552px'; // 12.32px * 1.1 = 13.552px
+
+    // 加载保存的网站列表
+    const savedWebsites = GM_getValue('autoSearchWebsites', '');
+    websiteSettingsTextarea.value = savedWebsites;
+
+    const websiteSettingsSaveButton = document.createElement('button');
+    websiteSettingsSaveButton.textContent = '保存';
+    websiteSettingsSaveButton.style.padding = '7.744px 11.616px'; // 7.04px * 1.1 = 7.744px, 10.56px * 1.1 = 11.616px
+    websiteSettingsSaveButton.style.backgroundColor = '#007BFF';
+    websiteSettingsSaveButton.style.color = 'white';
+    websiteSettingsSaveButton.style.border = 'none';
+    websiteSettingsSaveButton.style.borderRadius = '3.872px'; // 3.52px * 1.1 = 3.872px
+    websiteSettingsSaveButton.style.cursor = 'pointer';
+    websiteSettingsSaveButton.style.fontSize = '13.552px'; // 12.32px * 1.1 = 13.552px
+    websiteSettingsSaveButton.addEventListener('click', function() {
+        GM_setValue('autoSearchWebsites', websiteSettingsTextarea.value);
+        websiteSettingsContainer.style.display = 'none';
+    });
+
+    websiteSettingsContainer.appendChild(websiteSettingsLabel);
+    websiteSettingsContainer.appendChild(websiteSettingsTextarea);
+    websiteSettingsContainer.appendChild(websiteSettingsSaveButton);
+    document.body.appendChild(websiteSettingsContainer);
+
+    // 使用 GM_registerMenuCommand 创建设置菜单
+    GM_registerMenuCommand('设置自动搜索网站列表', function() {
+        websiteSettingsContainer.style.display = websiteSettingsContainer.style.display === 'none' ? 'block' : 'none';
+    });
+
     // 按钮点击事件处理函数
     function performSearch() {
         const movieName = input.value.trim();
@@ -235,18 +309,15 @@
                             });
 
                             // 根据结果显示情况设置自动消失
-
                         },
                         onerror: function() {
                             resultDiv.textContent = '请求失败，请检查 Everything 服务器是否正常运行';
-
                         }
                     });
                 }
             });
         } else {
             resultDiv.textContent = '请输入电影名字';
-
         }
     }
 
@@ -313,22 +384,46 @@
 
     // 自动填充并搜索电影或漫画名称
     function autoSearchDoubanMovie() {
-        let name = extractFileNameFromSpan(); // 优先尝试提取 <span style="color:#CC0000;">*******</span> 元素中的文件名
-        if (!name) {
-            name = extractFileNameFromH2(); // 其次尝试提取 <h2> 元素中的文件名
+        const currentUrl = window.location.href;
+        const savedWebsites = GM_getValue('autoSearchWebsites', '');
+        const websites = savedWebsites ? savedWebsites.split('\n').map(url => url.trim()) : [];
+
+        // 新增：增加额外检查，确保 websites 列表有效且非空
+        if (!websites || websites.length === 0 || websites.every(url => !url)) {
+            console.log('自动搜索网站列表为空或无效，跳过自动搜索');
+            return;
         }
-        if (!name) {
-            name = extractMovieNameFromDouban();
-        }
-        if (!name) {
-            name = extractMangaNameFromPage();
-        }
-        if (name) {
-            input.value = name;
-            // 显示搜索界面
-            container.style.display = 'block';
-            toggleButton.style.display = 'none'; // 隐藏“搜”字按钮
-            performSearch();
+
+        // 检查当前页面是否属于自动搜索网站列表
+        if (websites.some(website => currentUrl.includes(website))) {
+            if (currentUrl.includes('https://movie.douban.com/')) {
+                const name = extractMovieNameFromDouban();
+                if (name) {
+                    input.value = name;
+                    // 显示搜索界面
+                    container.style.display = 'block';
+                    toggleButton.style.display = 'none'; // 隐藏“搜”字按钮
+                    performSearch();
+                }
+            } else {
+                let name = extractFileNameFromSpan(); // 优先尝试提取 <span style="color:#CC0000;">*******</span> 元素中的文件名
+                if (!name) {
+                    name = extractMovieNameFromDouban();
+                }
+                if (!name) {
+                    name = extractMangaNameFromPage();
+                }
+                if (!name) {
+                    name = extractFileNameFromH2(); // 最后尝试提取 <h2> 元素中的文件名
+                }
+                if (name) {
+                    input.value = name;
+                    // 显示搜索界面
+                    container.style.display = 'block';
+                    toggleButton.style.display = 'none'; // 隐藏“搜”字按钮
+                    performSearch();
+                }
+            }
         }
     }
 
