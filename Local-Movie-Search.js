@@ -29,9 +29,10 @@
     button.style.backgroundColor = '#007BFF';
     button.style.color = 'white';
     button.style.border = 'none';
-    button.style.borderRadius = '3.872px'; // 3.52px * 1.1 = 3.872px
+    button.style.borderRadius = '4px'; // 调整圆角大小
     button.style.cursor = 'pointer';
-    button.style.fontSize = '13.552px'; // 12.32px * 1.1 = 13.552px
+    button.style.fontSize = '12px'; // 调整字体大小为12px
+    button.style.padding = '6px 12px'; // 调整内边距
     button.addEventListener('mouseover', function() {
         this.style.backgroundColor = '#0056b3';
     });
@@ -138,10 +139,6 @@
     settingsSaveButton.style.borderRadius = '3.872px'; // 3.52px * 1.1 = 3.872px
     settingsSaveButton.style.cursor = 'pointer';
     settingsSaveButton.style.fontSize = '13.552px'; // 12.32px * 1.1 = 13.552px
-    settingsSaveButton.addEventListener('click', function() {
-        localStorage.setItem('searchServerUrl', settingsInput.value);
-        settingsContainer.style.display = 'none';
-    });
 
     settingsContainer.appendChild(settingsLabel);
     settingsContainer.appendChild(settingsInput);
@@ -151,12 +148,31 @@
     // 加载保存的服务器地址
     const savedUrl = localStorage.getItem('searchServerUrl');
     if (savedUrl) {
-        settingsInput.value = savedUrl;
+        settingsInput.value = savedUrl; // 恢复用户设置的地址
     }
 
     // 使用 GM_registerMenuCommand 创建设置菜单
     GM_registerMenuCommand('设置检索服务器地址', function() {
         settingsContainer.style.display = settingsContainer.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // 修改保存按钮逻辑，确保地址持久化并全局生效
+    settingsSaveButton.addEventListener('click', function() {
+        const newUrl = settingsInput.value.trim();
+        if (newUrl) {
+            localStorage.setItem('searchServerUrl', newUrl); // 持久化到 localStorage
+            settingsContainer.style.display = 'none';
+        } else {
+            alert('请输入有效的检索服务器地址');
+        }
+    });
+
+    // 在页面加载时同步检索服务器地址到输入框
+    window.addEventListener('load', function() {
+        const globalSavedUrl = localStorage.getItem('searchServerUrl');
+        if (globalSavedUrl) {
+            settingsInput.value = globalSavedUrl; // 确保所有页面加载时使用相同的地址
+        }
     });
 
     // 创建新的设置面板
@@ -430,6 +446,14 @@
     // 在页面加载完成后尝试自动搜索豆瓣电影或漫画
     window.addEventListener('load', function() {
         autoSearchDoubanMovie();
+    });
+
+    // 添加全局点击事件监听器
+    document.addEventListener('click', function(event) {
+        if (input.value.trim() === '' && !container.contains(event.target) && !toggleButton.contains(event.target)) {
+            container.style.display = 'none'; // 隐藏插件页面
+            toggleButton.style.display = 'block'; // 显示切换按钮
+        }
     });
 
 })();
