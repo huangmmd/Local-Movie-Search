@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Local Movie Search
 // @namespace    http://tampermonkey.net/
-// @version      1.8
+// @version      1.9
 // @description  在网页上添加输入框和按钮，搜索本地电影是否存在（需要配合Everything的HTTP服务器使用）。注：拖选要搜索的电影名再使用ALT+C快捷键可直接搜索。
 // @author       huangmmd
 // @match        *://*/*
@@ -194,7 +194,7 @@
     websiteCloseButton.style.position = 'absolute';
     websiteCloseButton.style.top = '9.68px'; // 8.8px * 1.1 = 9.68px
     websiteCloseButton.style.right = '9.68px'; // 8.8px * 1.1 = 9.68px
-    websiteCloseButton.style.padding = '4.84px 9.68px'; // 4.4px * 1.1 = 4.84px, 8.8px * 1.1 = 9.68px
+    websiteCloseButton.style.padding = '4.84px 9.68px'; // 4.4px * 1.1 = 4.84px, 8.8px * 1.1 = 9.616px
     websiteCloseButton.style.backgroundColor = '#dc3545';
     websiteCloseButton.style.color = 'white';
     websiteCloseButton.style.border = 'none';
@@ -309,9 +309,9 @@
                                 if (allFoundMovies.length > 0) {
                                     resultText += '<br>';
                                 }
-                                resultText += '本地不存在以下电影、漫画：<br>';
+                                resultText += '<span style="color: red;">本地不存在以下电影、漫画：</span><br>'; // 修改：标红显示
                                 notFoundMovies.forEach(movie => {
-                                    resultText += `${movie}<br>`;
+                                    resultText += `<span style="color: red;">${movie}</span><br>`; // 修改：标红显示
                                 });
                             }
                             resultDiv.innerHTML = resultText;
